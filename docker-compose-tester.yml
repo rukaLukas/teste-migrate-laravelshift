@@ -1,0 +1,41 @@
+version: '2.0'
+services:
+
+  #PHP Service
+  app:
+    build:
+      context: .
+    image: api-bav
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      APP_URL: ${APP_URL}
+      HERE_API_KEY: ${HERE_API_KEY}
+      SPACES_KEY: ${SPACES_KEY}
+      SPACES_SECRET: ${SPACES_SECRET}
+      SPACES_BUCKET: ${SPACES_BUCKET}
+    working_dir: /var/www/html/
+    volumes:
+      - ./:/var/www/html/
+
+  composer:
+    restart: 'no'
+    image: composer:2
+    command: sh -c "composer install --ignore-platform-reqs && cp .env.example .env && php artisan key:generate"
+    volumes:
+        - ./:/app
+
+
+
+#Docker Networks
+networks:
+  default:
+    external:
+      name: bav-busca-ativa-vacinal-api_app-network

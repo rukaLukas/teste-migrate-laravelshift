@@ -1,0 +1,110 @@
+- name: prepare
+  service: composer
+  command: sh -c "composer install --ignore-platform-reqs && cp .env.example .env && php artisan key:generate"
+
+# - name: mysql_tests
+#   service: mysql_tests
+#   command: echo one
+
+# - name: tests
+#   service: app
+#   command: ./vendor/bin/phpunit
+
+# Tests homologacao droplet
+- name: reinstate SSH Private Key File
+  tag: develop
+  service: ssh-helper  
+  command: /bin/bash -c "echo -e $PRIVATE_SSH_KEY >> /root/.ssh/id_rsa"
+
+- name: chmod id_rsa
+  tag: develop
+  service: ssh-helper
+  command: chmod 600 /root/.ssh/id_rsa
+
+- name: deploy step 1 - clone repo
+  tag: develop
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@159.223.136.26 'cd /var/www/backend/tests/BAV-busca-ativa-vacinal-api; git pull origin develop; . ~/.profile; docker-compose --project-name tester --file docker-compose-tester.yml --env-file .docker-env up -d'
+
+- name: run test
+  tag: develop
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@159.223.136.26 'cd /var/www/backend/tests/BAV-busca-ativa-vacinal-api;docker exec tester_app_1 php artisan migrate; docker exec tester_app_1 php artisan test'
+
+- name: run test
+  tag: develop
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@159.223.136.26 'docker stop tester_app_1'
+
+
+# - name: static_analysis
+#   service: app
+#   command: ./vendor/bin/psalm --no-cache --show-info=true
+
+# Deploy producao droplet
+- name: reinstate SSH Private Key File
+  tag: main
+  service: ssh-helper
+  command: /bin/bash -c "echo -e $PRIVATE_SSH_KEY >> /root/.ssh/id_rsa"
+
+- name: chmod id_rsa
+  tag: main
+  service: ssh-helper
+  command: chmod 600 /root/.ssh/id_rsa
+
+- name: test step 1 - clone repo
+  tag: main
+  service: ssh-helper
+  command:  ssh -o StrictHostKeyChecking=no root@137.184.144.59 'cd /var/www/backend/tests/BAV-busca-ativa-vacinal-api; git pull origin main; . ~/.profile; docker-compose --project-name tester --file docker-compose-tester.yml --env-file .docker-env up -d'
+
+- name: test step 2 - run test
+  tag: main
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@137.184.144.59 'cd /var/www/backend/tests/BAV-busca-ativa-vacinal-api;docker exec tester_app_1 php artisan migrate; docker exec tester_app_1 php artisan test'
+
+- name: test step 3 - drop test container
+  tag: main
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@137.184.144.59 'docker stop tester_app_1'
+
+
+- name: deploy step 1 - clone repo
+  tag: main
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@137.184.144.59 'cd /var/www/backend/BAV-busca-ativa-vacinal-api; git pull origin main'
+
+- name: deploy step 2 - run docker compose
+  tag: main
+  service: ssh-helper
+  command: ssh root@137.184.144.59 'cd /var/www/backend/BAV-busca-ativa-vacinal-api; . ~/.profile; docker-compose --env-file .docker-env up -d'
+
+- name: run migrations
+  tag: main
+  service: ssh-helper
+  command: ssh root@137.184.144.59 'docker exec bav_app php artisan migrate --force; docker exec bav_app php artisan db:seed --class=MigrateSeeder --force'
+
+  # Deploy staging droplet
+- name: reinstate SSH Private Key File
+  tag: develop
+  service: ssh-helper
+  command: /bin/bash -c "echo -e $PRIVATE_SSH_KEY >> /root/.ssh/id_rsa"
+
+- name: chmod id_rsa
+  tag: develop
+  service: ssh-helper
+  command: chmod 600 /root/.ssh/id_rsa
+
+- name: deploy step 1 - clone repo
+  tag: develop
+  service: ssh-helper
+  command: ssh -o StrictHostKeyChecking=no root@159.223.136.26 'cd /var/www/backend/BAV-busca-ativa-vacinal-api; git pull origin develop'
+
+- name: deploy step 2 - run docker compose
+  tag: develop
+  service: ssh-helper
+  command: ssh root@159.223.136.26 'cd /var/www/backend/BAV-busca-ativa-vacinal-api; . ~/.profile; docker-compose --env-file .docker-env up -d'
+
+- name: run migrations
+  tag: develop
+  service: ssh-helper
+  command: ssh root@159.223.136.26 'docker exec bav_app php artisan migrate; docker exec bav_app php artisan db:seed --class=MigrateSeeder'

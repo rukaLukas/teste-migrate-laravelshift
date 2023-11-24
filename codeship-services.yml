@@ -1,0 +1,23 @@
+app:
+  build: .
+  cached: true
+  volumes:
+    - ./.ssh:/home/root/.ssh
+    - ./:/var/www/html/
+
+composer:
+  image: composer:2
+  volumes:
+    - ./:/app
+
+ssh-helper:
+  build:
+    image: codeship/setting-ssh-key-test
+    dockerfile: Dockerfile-ssh
+  encrypted_env_file:
+    - codeship.env.encrypted
+  volumes:
+  # mapping to `.ssh` directory ensures that `id_rsa` file persists to subsequent steps
+  # replace container pathing if $HOME is not `/root`
+    - ./.ssh:/root/.ssh
+    - ./:/app
