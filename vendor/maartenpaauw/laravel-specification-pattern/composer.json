@@ -1,0 +1,67 @@
+{
+    "name": "maartenpaauw/laravel-specification-pattern",
+    "description": "This is my package laravel-specification-pattern",
+    "keywords": [
+        "maartenpaauw",
+        "laravel",
+        "laravel-specification-pattern"
+    ],
+    "homepage": "https://github.com/maartenpaauw/laravel-specification-pattern",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maarten Paauw",
+            "email": "maartenpaauw@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "spatie/laravel-package-tools": "^1.9.2",
+        "illuminate/contracts": "^8.83|^9.2"
+    },
+    "require-dev": {
+        "nunomaduro/collision": "^5.11|^6.1",
+        "nunomaduro/larastan": "^1.0",
+        "orchestra/testbench": "^6.22",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-laravel": "^1.1",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpunit/phpunit": "^9.5",
+        "spatie/laravel-ray": "^1.26",
+        "spatie/phpunit-snapshot-assertions": "^4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Maartenpaauw\\Specifications\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Maartenpaauw\\Specifications\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Maartenpaauw\\Specifications\\SpecificationsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
